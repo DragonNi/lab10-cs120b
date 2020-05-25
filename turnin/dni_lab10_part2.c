@@ -1,7 +1,7 @@
 /*	Author: lab
  *  Partner(s) Name: 
  *	Lab Section:
- *	Assignment: Lab #10  Exercise #3
+ *	Assignment: Lab #10  Exercise #2
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -20,9 +20,7 @@ unsigned long _avr_timer_cntcurr = 0;
 
 unsigned char threeLEDs;
 unsigned char blinkingLEDs;
-unsigned char sound;
 unsigned char tempA;
-unsigned char tempB;
 
 unsigned char arr[3] = {0x01, 0x02, 0x04};
 unsigned int i; //this is for interating through the array; allows for easy light switching
@@ -104,54 +102,11 @@ void CombinedLEDs_Tick(){
 
 	switch(CombinedLEDs_state){
 		case combinedNext:
-			tempA = (threeLEDs & 0x07) | (blinkingLEDs << 3) | ((sound & 0x01) << 4);
+			tempA = (threeLEDs & 0x07) | (blinkingLEDs << 3);
 			break;
 
 		default:
 			break;
-	}
-}
-
-
-enum Speaker_States{speakerStart, off, on} Speaker_state;
-void Speaker_Tick(){
-	switch(Speaker_state){
-		case speakerStart:
-			Speaker_state = off;
-			sound = 0;
-			break;
-		case off:
-			if((tempB & 0x04) == 0x04) {
-				Speaker_state = on;
-			}
-			else{
-				Speaker_state = off;
-			}
-			break;
-		case on:
-			if((tempB & 0x04) == 0x04) {
-				Speaker_state = on;
-				sound = !sound;
-			}
-			else{
-				Speaker_state = off;
-			}
-			break;
-
-		default:
-			Speaker_state = off;
-			break;
-	}
-	switch(Speaker_state){
-		case off:
-			sound = 0;
-			break;
-		case on:
-			break;
-
-		default:
-			break;
-
 	}
 }
 
@@ -194,27 +149,24 @@ void TimerSet(unsigned long M) {
 
 
 int main(void) {
-    DDRA = 0x00; PORTA = 0xFF;
+    /* Insert DDR and PORT initializations */
     DDRB = 0xFF; PORTB = 0x00;
      
     unsigned long ThreeLEDs_elapsedTime = 0;
     unsigned long BlinkingLEDs_elapsedTime = 0;
     unsigned long CombinedLEDs_elapsedTime = 0;
-    unsigned long Speaker_elapsedTime = 0;
     const unsigned long timerPeriod = 1;
 
     ThreeLEDs_state = threeStart;
     BlinkingLEDs_state = blinkStart;
     CombinedLEDs_state = combinedStart;
-    Speaker_state = speakerStart;
 
     tempA = 0x00;
-    tempB = 0;
 
     TimerSet(timerPeriod);
     TimerOn();
+    /* Insert your solution below */
     while (1) {
-	    tempB = ~PINA;
 	    if(ThreeLEDs_elapsedTime >= 300){
 	    	ThreeLEDs_Tick();
 		ThreeLEDs_elapsedTime = 0;
@@ -223,11 +175,7 @@ int main(void) {
 		BlinkingLEDs_Tick();
 		BlinkingLEDs_elapsedTime = 0;
 	    }
-	    if(Speaker_elapsedTime >= 2){
-	    	Speaker_Tick();
-		Speaker_elapsedTime = 0;
-	    }
-	    if(CombinedLEDs_elapsedTime >= 2){
+	    if(CombinedLEDs_elapsedTime >= 100){
 	    	CombinedLEDs_Tick();
 		CombinedLEDs_elapsedTime = 0;
 	    }
@@ -239,7 +187,7 @@ int main(void) {
 	    ThreeLEDs_elapsedTime += timerPeriod;
 	    BlinkingLEDs_elapsedTime += timerPeriod;
 	    CombinedLEDs_elapsedTime += timerPeriod;
-	    Speaker_elapsedTime += timerPeriod;
+
     }
     return 1;
 }
